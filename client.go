@@ -19,6 +19,7 @@ type APIClient struct {
 	token      string
 }
 
+// New returns an APIClient.
 func New(token string) (*APIClient, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -32,6 +33,7 @@ func New(token string) (*APIClient, error) {
 	}, nil
 }
 
+// NewWithClient returns an APIClient with custom HTTP Client.
 func NewWithClient(token string, httpClient *http.Client) (*APIClient, error) {
 	c, err := New(token)
 	if err != nil {
@@ -41,6 +43,7 @@ func NewWithClient(token string, httpClient *http.Client) (*APIClient, error) {
 	return c, nil
 }
 
+// Params has parameters which is used with HTTP Requesting.
 type Params struct {
 	headers map[string]string
 	queries map[string]string

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"time"
 )
 
 type GetAppGraphRequest struct {
@@ -24,6 +25,7 @@ type GetAppGraphRequest struct {
 	Height   int
 }
 
+// GetAppGraph returns an application data graph.
 func (c *APIClient) GetAppGraph(req *GetAppGraphRequest) (image.Image, error) {
 	if req.AppID == "" || req.Region == "" || req.Template == "" {
 		return nil, errors.New("appId, region, template must be set")
@@ -72,6 +74,7 @@ type GetAppValueRequest struct {
 	End      string
 }
 
+// GetAppValue returns application data value.
 func (c *APIClient) GetAppValue(req *GetAppValueRequest) (float64, error) {
 	if req.AppID == "" || req.Region == "" || req.Template == "" {
 		return 0, errors.New("appId, region, template must be set")
@@ -123,8 +126,9 @@ type BulkdataAppQuery struct {
 	Template string `json:"template"`
 }
 
+// GetMultipleAppsValue returns multiple application data values
 func (c *APIClient) GetMultipleAppsValue(req *GetMultipleAppsValueRequest) (
-	resp map[string]int64,
+	resp map[string]float64,
 	_ error,
 ) {
 	var buf bytes.Buffer
@@ -172,17 +176,32 @@ type BulkxportAppQuery struct {
 	Template  string `json:"template"`
 	Start     string `json:"start,omitempty"`
 	End       string `json:"end,omitempty"`
-	Xporttime string `json:"xporttim,omitemptye"`
+	Xporttime string `json:"xporttime,omitempty"`
 	Normalize string `json:"normalize,omitempty"`
 }
 
-type GetMultipleAppsValueSeriesWithSpanResponse struct {
+// NOTE: BulkXportEntry is undocumented in official API reference for now.
+type BulkXportEntry struct {
+	In        Timespan
+	Rrd       Timespan
+	Out       Timespan
+	Zeronans  bool
+	Endlast   bool
+	Normalize bool
+	Data      map[string][]float64
 }
 
+type Timespan struct {
+	Start time.Time
+	End   time.Time
+	Step  int
+}
+
+// GetMultipleAppsValueSeriesWithSpan returns multiple application value series for given time span.
 func (c *APIClient) GetMultipleAppsValueSeriesWithSpan(
 	req *GetMultipleAppsValueSeriesWithSpanRequest,
 ) (
-	resp map[string]map[string][]int64,
+	resp map[string]BulkXportEntry,
 	_ error,
 ) {
 	var buf bytes.Buffer
@@ -230,15 +249,16 @@ type BulkAppQuery struct {
 	Template  string `json:"template"`
 	Start     string `json:"start,omitempty"`
 	End       string `json:"end,omitempty"`
-	Xporttime string `json:"xporttim,omitemptye"`
+	Xporttime string `json:"xporttime,omitempty"`
 	Normalize string `json:"normalize,omitempty"`
 }
 
 type BulkAllEntry struct {
-	Data  int64
-	Xport map[string][]int64
+	Data  float64
+	Xport BulkXportEntry
 }
 
+// GetMultpleAppsValueAndValueSeriesWithSpan returns multiple application data values and value series for given time span.
 func (c *APIClient) GetMultipleAppsValueAndValueSeriesWithSpan(
 	req *GetMultipleAppsValueAndValueSeriesWithSpanRequest,
 ) (
